@@ -2,9 +2,9 @@ package main
 
 import rl "vendor:raylib"
 
-//okay so we need raygui for the title screen (probably dont even need raygui)
-// math/random for the randomly spawning hexagons
-// randomly spawining them in random positions on the screen and with different colours 14 colours i think is enough
+// okay so we need raygui for the title screen (probably dont even need raygui)
+// [x] math/random for the randomly spawning hexagons
+// [x] randomly spawining them in random positions on the screen and with different colours 14 colours i think is enough
 // a system to merge hexagons and store their atributes
 // and a way to check if the hexagon contains at minimum 16 other hexagons
 import "core:math/rand"
@@ -51,25 +51,27 @@ main :: proc() {
 		}
 
 
-		if len(hexes) < 10 {
-			for i in 0 ..< 1 {
-				append(
-					&hexes,
-					Hex {
-						pos = {
-							camera.target.x + f32(rand.int_range(-500, 500)),
-							camera.target.y + f32(rand.int_range(-500, 500)),
-						},
-						vel = rl.Vector2{f32(rand.int_range(-2, 2)), f32(rand.int_range(-2, 2))},
-						color = {
-							u8(rand.int_range(50, 255)),
-							u8(rand.int_range(50, 255)),
-							u8(rand.int_range(50, 255)),
-							255,
-						},
-					},
-				)
+		// Spawn hexes around camera until we have 10
+		for len(hexes) < 10 {
+
+			new_pos := rl.Vector2 {
+				camera.target.x + f32(rand.int_range(-500, 500)),
+				camera.target.y + f32(rand.int_range(-500, 500)),
 			}
+
+			append(
+				&hexes,
+				Hex {
+					pos = new_pos,
+					vel = rl.Vector2{f32(rand.int_range(-2, 2)), f32(rand.int_range(-2, 2))},
+					color = {
+						u8(rand.int_range(50, 255)),
+						u8(rand.int_range(50, 255)),
+						u8(rand.int_range(50, 255)),
+						255,
+					},
+				},
+			)
 		}
 
 		// Move hexes
@@ -84,6 +86,14 @@ main :: proc() {
 
 			if hex.pos.y > camera.target.y + 500 || hex.pos.y < camera.target.y - 500 {
 				hex.vel.y *= -1
+			}
+		}
+		// Remove hexes too far from camera
+		for i := len(hexes) - 1; i >= 0; i -= 1 {
+			distance := rl.Vector2Distance(hexes[i].pos, camera.target)
+
+			if distance > despawn_radius {
+				unordered_remove(&hexes, i)
 			}
 		}
 
