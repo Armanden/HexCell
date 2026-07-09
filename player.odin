@@ -139,110 +139,102 @@ player_find_socket_recursive :: proc(
 		}
 	}
 
+}
+// Finds attachment location.
 
-	// Finds attachment location.
-
-	player_find_attachment :: proc(
-		player: ^Player,
-		world: ^World,
-		target: rl.Vector2,
-	) -> (
-		Hex_ID,
-		int,
-	) {
-
-
-		best_id := INVALID_HEX_ID
-
-		best_socket := -1
-
-		best_distance := f32(999999)
+player_find_attachment :: proc(
+	player: ^Player,
+	world: ^World,
+	target: rl.Vector2,
+) -> (
+	Hex_ID,
+	int,
+) {
 
 
-		for child in player.root_children {
+	best_id := INVALID_HEX_ID
+
+	best_socket := -1
+
+	best_distance: f32 = 999999
 
 
-			player_find_socket_recursive(
-				world,
-				child,
-				&best_id,
-				&best_socket,
-				&best_distance,
-				target,
-			)
-		}
+	for child in player.root_children {
 
 
-		return best_id, best_socket
+		player_find_socket_recursive(world, child, &best_id, &best_socket, &best_distance, target)
 	}
 
 
-	// Attach a new hex organically.
-
-	player_attach_hex :: proc(player: ^Player, world: ^World, id: Hex_ID) {
-
-		hex := world_get_hex(world, id)
-
-		if hex == nil {
-			return
-		}
-
-		parent_id, socket := player_find_attachment(player, world, hex.world_position)
+	return best_id, best_socket
+}
 
 
-		if parent_id == INVALID_HEX_ID {
+// Attach a new hex organically.
 
-			socket = len(player.root_children) % 6
+player_attach_hex :: proc(player: ^Player, world: ^World, id: Hex_ID) {
 
-			append(&player.root_children, id)
+	hex := world_get_hex(world, id)
 
-			hex.local_position = HEX_SOCKET_OFFSETS[socket]
+	if hex == nil {
+		return
+	}
 
-		} else {
+	parent_id, socket := player_find_attachment(player, world, hex.world_position)
 
-			parent := world_get_hex(world, parent_id)
 
-			if parent == nil {
-				return
-			}
+	if parent_id == INVALID_HEX_ID {
 
-			append(&parent.children, id)
+		socket = len(player.root_children) % 6
 
-			parent.socket_used[socket] = true
+		append(&player.root_children, id)
 
-			hex.parent = parent.id
+		hex.local_position = HEX_SOCKET_OFFSETS[socket]
 
-			hex.local_position = HEX_SOCKET_OFFSETS[socket]
-		}
-
+	} else {
 
 		parent := world_get_hex(world, parent_id)
-
 
 		if parent == nil {
 			return
 		}
 
-
 		append(&parent.children, id)
-
 
 		parent.socket_used[socket] = true
 
-
 		hex.parent = parent.id
 
-
 		hex.local_position = HEX_SOCKET_OFFSETS[socket]
-
-
-		hex.active = false
-
-		hex.attached = true
-
-
-		player_add_attributes(player, hex)
 	}
+
+
+	parent := world_get_hex(world, parent_id)
+
+
+	if parent == nil {
+		return
+	}
+
+
+	append(&parent.children, id)
+
+
+	parent.socket_used[socket] = true
+
+
+	hex.parent = parent.id
+
+
+	hex.local_position = HEX_SOCKET_OFFSETS[socket]
+
+
+	hex.active = false
+
+	hex.attached = true
+
+
+	player_add_attributes(player, hex)
 }
 
 
