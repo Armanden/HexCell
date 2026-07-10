@@ -11,7 +11,7 @@ WORLD_DESPAWN_RADIUS :: 1400.0
 
 
 World :: struct {
-	hexes:          map[Hex_ID]Hex,
+	hexes:          map[Hex_ID]^Hex,
 	next_id:        Hex_ID,
 	despawn_radius: f32,
 }
@@ -19,7 +19,11 @@ World :: struct {
 
 world_create :: proc() -> World {
 
-	return World{hexes = make(map[Hex_ID]Hex), next_id = Hex_ID(1), despawn_radius = 900}
+	return World {
+		hexes = make(map[Hex_ID]^Hex),
+		next_id = Hex_ID(1),
+		despawn_radius = WORLD_DESPAWN_RADIUS,
+	}
 }
 
 
@@ -37,7 +41,7 @@ world_get_hex :: proc(world: ^World, id: Hex_ID) -> ^Hex {
 	}
 
 
-	h, ok := world.hexes[id]
+	hex, ok := world.hexes[id]
 
 
 	if !ok {
@@ -45,7 +49,7 @@ world_get_hex :: proc(world: ^World, id: Hex_ID) -> ^Hex {
 	}
 
 
-	return &world.hexes[id]
+	return hex
 }
 
 
@@ -57,7 +61,10 @@ world_add_hex :: proc(world: ^World, position: rl.Vector2, t: Hex_Type) -> Hex_I
 	world.next_id += 1
 
 
-	world.hexes[id] = hex_create(id, position, t)
+	hex := new(Hex)
+	hex^ = hex_create(id, position, t)
+
+	world.hexes[id] = hex
 
 
 	return id
@@ -144,32 +151,6 @@ world_update_spawning :: proc(world: ^World, player_position: rl.Vector2) {
 }
 
 
-world_update_movement :: proc(world: ^World) {
-
-
-	for id in world.hexes {
-
-
-		h := &world.hexes[id]
-
-
-		if !h.active {
-			continue
-		}
-
-
-		h.world_position += h.velocity
-
-
-		if rl.GetRandomValue(0, 1000) < 5 {
-
-			h.velocity.x *= -1
-			h.velocity.y *= -1
-		}
-	}
-}
-
-
 resolve_collision :: proc(a: ^Hex, b: ^Hex) {
 
 
@@ -197,6 +178,27 @@ resolve_collision :: proc(a: ^Hex, b: ^Hex) {
 
 
 		b.world_position += direction * push
+	}
+}
+
+world_update_movement :: proc(world: ^World) {
+
+	for _, h in world.hexes {
+
+		if h == nil {
+			continue
+		}
+
+		if !h.active {
+			continue
+		}
+
+		h.world_position += h.velocity
+
+		if rl.GetRandomValue(0, 1000) < 5 {
+			h.velocity.x *= -1
+			h.velocity.y *= -1
+		}
 	}
 }
 

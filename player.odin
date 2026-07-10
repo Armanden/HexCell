@@ -175,13 +175,11 @@ player_find_attachment :: proc(
 player_attach_hex :: proc(player: ^Player, world: ^World, id: Hex_ID) {
 
 	hex := world_get_hex(world, id)
-
 	if hex == nil {
 		return
 	}
 
 	parent_id, socket := player_find_attachment(player, world, hex.world_position)
-
 
 	if parent_id == INVALID_HEX_ID {
 
@@ -189,12 +187,12 @@ player_attach_hex :: proc(player: ^Player, world: ^World, id: Hex_ID) {
 
 		append(&player.root_children, id)
 
+		hex.parent = INVALID_HEX_ID
 		hex.local_position = HEX_SOCKET_OFFSETS[socket]
 
 	} else {
 
 		parent := world_get_hex(world, parent_id)
-
 		if parent == nil {
 			return
 		}
@@ -204,35 +202,11 @@ player_attach_hex :: proc(player: ^Player, world: ^World, id: Hex_ID) {
 		parent.socket_used[socket] = true
 
 		hex.parent = parent.id
-
 		hex.local_position = HEX_SOCKET_OFFSETS[socket]
 	}
 
-
-	parent := world_get_hex(world, parent_id)
-
-
-	if parent == nil {
-		return
-	}
-
-
-	append(&parent.children, id)
-
-
-	parent.socket_used[socket] = true
-
-
-	hex.parent = parent.id
-
-
-	hex.local_position = HEX_SOCKET_OFFSETS[socket]
-
-
 	hex.active = false
-
 	hex.attached = true
-
 
 	player_add_attributes(player, hex)
 }
