@@ -18,3 +18,9 @@ but some hexagons arent complient with others contact with these hexaons damages
 to reach cell state(where the player has a solid molecule of minimum 16 hexagons).
 
 make this you have 4-5 days.
+
+# sound effects
+- win
+- lose
+- attach
+- main music
