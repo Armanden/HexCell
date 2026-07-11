@@ -18,6 +18,7 @@ odin build .
 
  - Open World
  - Crystal like design
+ - Parasite mechanics
 
 ### Controls
 
