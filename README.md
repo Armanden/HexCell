@@ -1,6 +1,6 @@
 ## HexCell
 
-![HexCell)](screenshot000.png)
+![HexCell)](Screenshot000.png)
 
 ### Description
 
