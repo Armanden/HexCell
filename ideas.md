@@ -24,3 +24,6 @@ make this you have 4-5 days.
 - lose
 - attach
 - main music
+
+# Notes
+- add the losing case as you forgot.
